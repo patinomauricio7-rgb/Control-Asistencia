@@ -218,16 +218,32 @@
   }
 
   function enviarAGoogleForm(datos) {
-    const formData = new FormData();
-    Object.keys(datos).forEach(key => formData.append(key, datos[key]));
+    const iframeName = 'iframe_envio_oculto';
+    let iframe = document.getElementById(iframeName);
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.name = iframeName;
+      iframe.id = iframeName;
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
+    }
 
-    fetch(FORM_ACTION_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      body: formData
-    }).catch(() => {
-      // "no-cors" no permite leer la respuesta; esto es normal y esperado.
+    const form = document.createElement('form');
+    form.action = FORM_ACTION_URL;
+    form.method = 'POST';
+    form.target = iframeName;
+
+    Object.keys(datos).forEach(key => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = datos[key];
+      form.appendChild(input);
     });
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
   }
 
   btnEntrada.addEventListener('click', () => marcar('Entrada'));
